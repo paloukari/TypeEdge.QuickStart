@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.TypeEdge.Proxy;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System;
-using System.Threading.Tasks; 
 using ThermostatApplication.Modules;
 using ThermostatApplication.Twins;
-using Microsoft.Azure.TypeEdge.Proxy;
 
 namespace Thermostat.ServiceApp
 {
@@ -13,9 +13,9 @@ namespace Thermostat.ServiceApp
         private static async Task Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-              .AddJsonFile("appsettings.json")
-              .AddEnvironmentVariables()
-              .Build();
+                .AddJsonFile("appSettings.json")
+                .AddEnvironmentVariables()
+                .Build();
 
             ProxyFactory.Configure(configuration["IotHubConnectionString"],
                 configuration["DeviceId"]);
@@ -33,22 +33,20 @@ namespace Thermostat.ServiceApp
                         break;
                     case "E":
                         return;
-                    default:
-                        break;
-
                 }
             }
         }
 
         private static async Task SetTemperatureSensorTwin()
         {
-            Console.WriteLine($"Set Default?(Y/N)");
+            Console.WriteLine("Set Default?(Y/N)");
             var res = Console.ReadLine()?.ToUpper();
             if (res == "Y")
             {
                 await SetTemperatureDefaults();
                 return;
             }
+
             var temperatureSensor = ProxyFactory.GetModuleProxy<ITemperatureSensor>();
             var twin = await temperatureSensor.Twin.GetAsync();
 
@@ -70,7 +68,7 @@ namespace Thermostat.ServiceApp
             Console.WriteLine($"Set the WaveType:{twin.WaveType.ToString()}");
             res = Console.ReadLine();
             if (!string.IsNullOrEmpty(res))
-                twin.WaveType = (WaveformType)Enum.Parse(typeof(WaveformType), res);
+                twin.WaveType = (WaveformType) Enum.Parse(typeof(WaveformType), res);
 
             Console.WriteLine($"Set the VerticalShift:{twin.Offset}");
             res = Console.ReadLine();
